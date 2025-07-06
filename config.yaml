@@ -1,0 +1,8 @@
+# Dataset paths
+path: ./Data  # root directory
+train: train  # train images (relative to 'path')
+val: val      # validation images (relative to 'path')
+
+# Class names
+names:
+  0: face
