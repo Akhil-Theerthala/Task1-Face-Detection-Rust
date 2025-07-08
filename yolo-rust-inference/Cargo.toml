@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-onnxruntime = "0.10.0"
-image = "0.23.14"
-ndarray = "0.15.3"
-ndarray-rand = "0.14.0"
-opencv = { version = "0.66", features = ["opencv-4"] }
+image = "0.25"
 anyhow = "1.0"
+rand = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
