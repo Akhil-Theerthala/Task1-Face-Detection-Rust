@@ -1,4 +1,4 @@
-# YOLO Rust Inference
+****# YOLO Rust Inference
 
 A high-performance face detection inference pipeline using YOLO models with Rust and Python backends. Features automatic Non-Maximum Suppression (NMS) for clean, duplicate-free results.
 
