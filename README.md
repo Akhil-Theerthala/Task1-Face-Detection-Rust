@@ -1,58 +1,9 @@
 ****# YOLO Rust Inference
 
-A high-performance face detection inference pipeline using YOLO models with Rust and Python backends. Features automatic Non-Maximum Suppression (NMS) for clean, duplicate-free results.
+A face detection inference pipeline using YOLO models with Rust and Python backends. Features automatic Non-Maximum Suppression (NMS) for clean, duplicate-free results.
 
-## 🚀 Features
 
-- **Advanced Face Detection:**
-  - Single-class face detection optimized for award ceremony images
-  - Non-Maximum Suppression (NMS) to eliminate duplicate detections
-  - Configurable IoU threshold for detection filtering
-
-- **Multiple Inference Backends:**
-  - Python backend (using ONNX Runtime)
-  - Mock backend (for testing and demonstration)
-  - Extensible architecture for future native Rust backends
-
-- **Automatic Backend Selection:**
-  - Automatically detects and uses the best available backend
-  - Falls back gracefully if dependencies are missing
-
-- **Batch Processing:**
-  - Process entire directories of images
-  - Supports common image formats (JPG, PNG, BMP, GIF)
-  - Results saved to dedicated output directory
-
-- **High-Quality Results:**
-  - Dramatic reduction in false positives (90% fewer duplicate detections)
-  - Human-readable detection results with confidence scores
-  - Pixel-perfect coordinate output
-
-## 📁 Project Structure
-
-```
-yolo-rust-inference/
-├── src/
-│   ├── main.rs          # Entry point with NMS threshold support
-│   ├── inference.rs     # Multi-backend inference pipeline
-│   ├── utils.rs         # Utility functions for file handling
-│   └── models/
-│       └── mod.rs       # Model-related structures and types
-├── models/
-│   └── best.onnx        # Face detection YOLO model
-├── yolo_inference.py    # Python backend with NMS integration
-├── Cargo.toml           # Rust project configuration
-└── README.md            # This documentation
-```
-
-## 🛠️ Installation & Setup
-
-### Prerequisites
-
-1. **Rust:** Install from [rust-lang.org](https://www.rust-lang.org/tools/install)
-2. **Python 3.10+** with virtual environment configured
-
-### Setup Instructions
+## Setup Instructions
 
 1. **Build the Rust application:**
    ```bash
@@ -67,7 +18,18 @@ yolo-rust-inference/
 
 3. **Model:** The `best.onnx` face detection model is included in the `models/` directory
 
-## 🚀 Usage
+## LLM Usage
+Since I have never had the chance to work with Rust, I could only make use of the agentic-development usign github copilot. I manually intervened to understand the flow of information and to see if there are any severe errors in the inference pipeline. The entire "rust" code was vibe-coded. 
+
+### YOLOv11 Training process
+The `WIDERFACE` dataset was used to finetune the YOLOv11n model. Since there is only one class, and the relevant characteristics of faces is fairly common across the training data, the `nano` version of the model is chosen. 
+
+The `WIDERFACE` dataset was filtered in two stages, 
+- The first stage involved filtering the dataset in which the face had little to no presence i.e., a face occupies <1% of the total image. This has been done by keeping the downstream tasks in mind, as we needed to generate 128x128 images, for which at least 90.5x90.5 size faces are needed. (*90.5 is 128/sqrt(2), a size below which the feature extraction is going to be hard for generating 128x128 images*). Similar steps were taken to make sure that the final images were in-line with the needed requirements.
+- The faces were once again filtered based on the similarity. Though all faces share the same structure, images of the same face can still be found in the dataset. Hence, a simple cosine-similarity based filtering was used to seperate the images. The embeddings were generated from the `ViT models` in the SigLIP2 Image encoding tower (chosen based on previous experience with the same model). 
+- Finally, the model was trained using the Ultralytics library, with the image size of 640, and then converted to `ONNX` format.
+
+## 🚀  Usage
 
 ### Basic Usage
 
@@ -81,7 +43,7 @@ Process images in a directory with default NMS settings:
 ./target/release/yolo-rust-inference ../test_images
 ```
 
-### Advanced Usage with Custom NMS
+### Usage with Custom NMS
 
 Control detection sensitivity with custom NMS thresholds:
 
@@ -102,15 +64,6 @@ Control detection sensitivity with custom NMS thresholds:
 - Each image gets a corresponding `.txt` file with detection results
 - Console shows real-time processing progress and summary
 
-## 📊 Performance Results
-
-**Before NMS (with duplicates):**
-```
-Image 1: 9 detections  → After NMS: 1 detection
-Image 2: 41 detections → After NMS: 5 detections  
-Image 3: 78 detections → After NMS: 7 detections
-Total: 253 detections  → After NMS: 25 detections (90% reduction)
-```
 
 ## 📋 Output Format
 
@@ -133,115 +86,4 @@ The application creates a `.txt` file for each processed image with clean, NMS-f
 - `width, height`: Bounding box dimensions in pixels
 - `class_name`: Always "face"
 
-## 🔧 Backend Selection
 
-The application automatically selects the best available backend:
-
-1. **Python Backend:** Used when:
-   - `yolo_inference.py` script is present
-   - Python environment has required packages installed
-   - ONNX model file exists
-
-2. **Mock Backend:** Used when:
-   - Python backend is unavailable
-   - For testing and demonstration purposes
-   - Generates random but realistic detection results
-
-## 📁 Supported Image Formats
-
-- JPEG/JPG
-- PNG  
-- BMP
-- GIF
-
-## 📺 Output Examples
-
-### Console Output
-
-```
-YOLO Rust Inference Pipeline
-=============================
-Initializing inference pipeline...
-NMS threshold: 0.5
-Using Python inference backend
-Model loaded from: "models/best.onnx"
-✓ Model loaded successfully
-Found 6 images to process
-
-Results will be saved to: "/path/to/inference_results"
-
-Processing 1/6: "16_Award_Ceremony_Awards_Ceremony_16_22.jpg"
-  Found 1 detection(s):
-    1: face (confidence: 0.79, bbox: 508,132 94x168)
-  ✓ Results saved to: "16_Award_Ceremony_Awards_Ceremony_16_22.txt"
-
-=============================
-Inference complete!
-Processed 6 images with 25 total detections
-```
-
-### File Output (example.txt)
-
-```
-# YOLO Detection Results  
-# Format: class_id confidence x y width height class_name
-# Coordinates are in pixels
-
- 0 0.789833   508.37   132.20    94.03   168.93 face
-```
-
-## ⚙️ Non-Maximum Suppression (NMS)
-
-NMS eliminates duplicate detections by removing overlapping bounding boxes:
-
-- **IoU Threshold 0.3:** Aggressive filtering (fewer detections)
-- **IoU Threshold 0.5:** Balanced filtering (recommended)  
-- **IoU Threshold 0.7:** Conservative filtering (more detections)
-
-**Impact:** Reduces detection count from 253 to 25 high-quality results (90% improvement)
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**"No images found in directory"**
-- Ensure directory contains supported formats (JPG, PNG, BMP, GIF)
-- Check file permissions and directory path
-
-**"Python inference failed"**  
-- Verify Python environment has required packages
-- Ensure `best.onnx` model exists in `models/` directory
-
-**"Model not found"**
-- Check that `best.onnx` is in the `models/` directory
-- Verify file permissions
-
-**Detection Quality Issues**
-- Too many detections: Use lower NMS threshold (e.g., 0.3)
-- Too few detections: Use higher NMS threshold (e.g., 0.7)
-- Default NMS threshold: 0.5 (balanced)
-
-### Debug Information
-
-Console output provides:
-- Backend selection (Python/Mock)
-- NMS threshold setting
-- Model loading status
-- Processing progress and detection counts
-
-## 🔧 Performance Tips
-
-- Build with `--release` for optimal performance
-- Adjust NMS threshold based on precision/recall needs
-- Process images in batches for best efficiency
-
-## 📄 License
-
-This project is part of the Face-Generation repository.
-
-## 🤝 Contributing
-
-Contributions welcome! The architecture supports:
-- Additional ONNX model formats
-- New inference backends  
-- Enhanced post-processing algorithms
