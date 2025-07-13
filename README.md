@@ -19,7 +19,7 @@ A face detection inference pipeline using YOLO models with Rust and Python backe
 3. **Model:** The `best.onnx` face detection model is included in the `models/` directory
 
 ## LLM Usage
-Since I have never had the chance to work with Rust, I could only make use of the agentic-development usign github copilot. I manually intervened to understand the flow of information and to see if there are any severe errors in the inference pipeline. The entire "rust" code was vibe-coded. 
+Since I have never had the chance to work with Rust, I could only make use of the agentic-development capabilities of github copilot to work on the majority of this part. I only intervened in the development process to understand the flow of information and to see if there are any severe errors in the inference pipeline. The entire "rust" code was vibe-coded. 
 
 ### YOLOv11 Training process
 The `WIDERFACE` dataset was used to finetune the YOLOv11n model. Since there is only one class, and the relevant characteristics of faces is fairly common across the training data, the `nano` version of the model is chosen. 
