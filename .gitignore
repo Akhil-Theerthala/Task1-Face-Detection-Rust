@@ -8,9 +8,6 @@ __pycache__/
 inference_results/
 test_images/
 
-target/
-
-!yolo-rust-inference/target/release/yolo-rust-inference
 
 # Distribution / packaging
 .Python
